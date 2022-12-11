@@ -1,7 +1,7 @@
 
 ************************************************ Graph Traversal ************************************************
 -> Depth First Search 
-{
+	{
 	In Order Traversal
 		1) Look at the left node (and all of it's subsequent subtrees)
 		2) Look at the root node 
@@ -33,10 +33,10 @@
 	
 	In Order Traversal: Starting from the left side of the tree, printing all the nodes in order (this would yield a sorted list)
 	Pre Order Traversal: Starting from the root node and printing down in a depth first manner.  Explores the left-most branch first, then every subsequen right branch moving up.  
-	Post Order Traversal: Similar to pre order, except starting at the leaf of the left most branch first.
-}
+	Post Order Traversal: Similar to pre order, except starting at the leaf of the left most branch first.}
 	
 -> Dijkstra's - find the shortest path
+	{
 	Given a start position and a list of edges.  Edges is a 3D vector.  each index i contains node i's outbound edges. 
 	edges is a vector of lists of pairs yielding -> [destination, distance] from each index node
 	The graph is weighted and unidirectional from node to node
@@ -114,11 +114,18 @@
 	- Create a data structure (DS1) which holds the shortest distance to every node, initialize with Start Node = 0; rest are INT_MAX
 	- Create a data structure (DS2) which holds the nodes which had already been visited. 
 	- Start Loop:   Terminating condition is when DS2 size = edges.size();
-		- Which node in DS1 has the shortest distance which is also not in DS2?
+		- Which node in DS1 has the shortest distance which is also not in DS2? If that shortest dist = INT_MAX the node cant be reached
+			In this case, add to the visited nodes and continue
 		- Look at all the outgoing nodes from that ^ node
+			** Note: if an outgoing node from the current node has already been visited, it does not need to be visited again **
 			- is the distance from start to the outgoing node < the distance shown in DS1?
 				- if yes -> update DS1
 				- if no -> continue;
 		- end looping through outgoing nodes
 		- update DS2 to reflect current node
 	- end loop:
+	
+	On choosing the data structures for DS1 and DS2
+		DS1 will need to convey the next minimum distance multiple times.  If it were a vector, finding the minimum distance would be an O(n) operation, which needs to run every iteration of the main loop.  So it needs to have fast fetching in a sorted fashion as well as fast node updating.  
+		
+		DS2 will need to have a fast finding algorithm, and will need to have its size easily checked.  A hash map - O(1) lookup
