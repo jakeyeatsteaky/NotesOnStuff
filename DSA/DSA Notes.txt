@@ -1,0 +1,124 @@
+
+************************************************ Graph Traversal ************************************************
+-> Depth First Search 
+{
+	In Order Traversal
+		1) Look at the left node (and all of it's subsequent subtrees)
+		2) Look at the root node 
+		3) Look at the right node (and all of its subsequent subtrees)
+		** This is a Depth First Search, which means RECURSION **
+			-> Call IOT on Left Node
+			-> Append Current Value (or print or do whatever with it)
+			-> Call IOT on Right Node
+	--- Time Complexity: O(N) -> we have to traverse every node in the array ---
+	--- Space Complexity: O(d) -> d is the depth of the longest branch.  Since recursive, d functions are stored on stack ---
+	
+	Pre Order Traversal	
+		1) Append the value 
+		2) Look at left node (and all subsequent subtrees)
+		3) Look at right node (and all subsequent subtrees)
+		** Basically the same at In order, but in a different order of calls **
+			-> Append or Print current node
+			-> Search Left
+			-> Search right
+	--- Time Complexity: O(N) -> we have to traverse every node in the array ---
+	--- Space Complexity: O(d) -> d is the depth of the longest branch.  Since recursive, d functions are stored on stack ---
+	
+	Post Order Traversal
+		1) Search Left
+		2) Search Right
+		3) Append or Print
+	--- Time Complexity: O(N) -> we have to traverse every node in the array ---
+	--- Space Complexity: O(d) -> d is the depth of the longest branch.  Since recursive, d functions are stored on stack ---
+	
+	In Order Traversal: Starting from the left side of the tree, printing all the nodes in order (this would yield a sorted list)
+	Pre Order Traversal: Starting from the root node and printing down in a depth first manner.  Explores the left-most branch first, then every subsequen right branch moving up.  
+	Post Order Traversal: Similar to pre order, except starting at the leaf of the left most branch first.
+}
+	
+-> Dijkstra's - find the shortest path
+	Given a start position and a list of edges.  Edges is a 3D vector.  each index i contains node i's outbound edges. 
+	edges is a vector of lists of pairs yielding -> [destination, distance] from each index node
+	The graph is weighted and unidirectional from node to node
+	Dijkstra's keeps track of the current shortest distance to every node its already been to (map)
+		-> Keeps track of what its already seen
+		
+	Example Graph:
+	0	{{1,7}},
+    1   {{2,6}, {3, 20}, {4, 3}},
+    2   {{3, 14}},
+    3   {{4, 2}},
+    4   {},
+    5   {}
+	
+	0|1|2|3|4|5   -> This table holds the current shortest path to each node in the graph
+	0|L|L|L|L|L   -> The shortest distance to the start node (0) is 0
+	 | | | | |	  -> here "L" refers to lemniscate which = inf
+	 | | | | |
+	 | | | | |     	Step 1) Start by looking at this data structure, and find the node with the current shortest distance
+	 | | | | |              to get to it. (in this case, its the start node which = 0)
+	 | | | | |
+	
+					Step 2) There is an additional data structure which keeps track of the nodes which are already looked at
+   {0,_ _ _ _ _}				   
+					Step 3) Look at all of the edges which are outgoing from the current node.  Check: Is the path from
+	0|1|2|3|4|5			    the current node less than the path in the "shortest path" data structure?
+	0|L|L|L|L|L					if no -> skip
+	0|7|L|L|L|L                 if yes -> update the shortest path data structure
+	 | | | | |
+	 | | | | |      Step 4) After doing this to every outgoing node from the current node, refer back to the shortest path 
+	 | | | | |              data structure.  What is the next node which has the shortest path that hasnt been visited yet?
+	 | | | | |
+	
+	(Continuing the algorithm -> Step 1 yields node 1)
+	- Update the "visited nodes" data structure			-> {0,1,_,_,_,_}
+    - Look at all the outgoing nodes from node 1
+	- Check: Is the path from Current Node (node 1) to the next node shorter than whats in the shortest path structure?
+	0|1|2|3|4|5			    0	{{1,7}}, 
+	0|L|L|L|L|L				1   {{2,6}, {3, 20}, {4, 3}},
+	0|7|L|L|L|L             2   {{3, 14}},    
+	 | | | | |              3   {{4, 2}},
+	 | | | | |              4   {},
+	 | | | | |              5   {}
+	 | | | | |         * Going from Node 1 to Node 2 is 6 therefore(::) < L (distance traveled from N0->N1 = 7 :: N0->N2 = 13
+	 
+	 - Update Shortest Path data struture  and Iterate through the rest of Node 1's outgoing nodes:
+	0 |1 |2 |3 |4 |5			         -> Keep in mind that you have to add the distance traveled so far
+	0 |L |L |L |L |L				
+	0 |7 |13|27|10|L          Visited Nodes:    
+	  |  |  |  |  |                 -> {0,1,_,_,_,_}
+	  |  |  |  |  |             
+	  |  |  |  |  |             
+	  |  |  |  |  |
+	 
+	 (Continuing Algorithm: Look at the data strcuture.  which is the shortest distance to a node not yet visited?)
+	0 |1 |2 |3 |4 |5		Visited Nodes: -> Now visiting N4	
+	0 |L |L |L |L |L			-> {0,1,4,_,_,_}	
+	0 |7 |13|27|10|L              
+	  |  |  |  |  |        - Node 4 doesnt have any outgoing nodes        
+	  |  |  |  |  |             
+	  |  |  |  |  |             
+	  |  |  |  |  |
+	  
+	 (Continuing Algorithm: Look at the data strcuture.  which is the shortest distance to a node not yet visited?)
+	0 |1 |2 |3 |4 |5		Visited Nodes: -> Now visiting N4	
+	0 |L |L |L |L |L			-> {0,1,4,_,_,_}	
+	0 |7 |13|27|10|L              
+	  |  |  |  |  |        - Node 4 doesnt have any outgoing nodes        
+	  |  |  |  |  |        - Continuing Algorithm:  Next Node is N2  
+	  |  |  |  |  |           -> {0,1,4,2,_,_}  
+	  |  |  |  |  |        - Look at outgoing nodes from N2:
+								- Is the path from N2 -> N3 < whats in the shortest distance DS>?
+								   N2 -> N3 = 14 (+ 13) = 27.  Is the same so skip it.
+	Dijkstra's Algorithm Summary:
+	- Create a data structure (DS1) which holds the shortest distance to every node, initialize with Start Node = 0; rest are INT_MAX
+	- Create a data structure (DS2) which holds the nodes which had already been visited. 
+	- Start Loop:   Terminating condition is when DS2 size = edges.size();
+		- Which node in DS1 has the shortest distance which is also not in DS2?
+		- Look at all the outgoing nodes from that ^ node
+			- is the distance from start to the outgoing node < the distance shown in DS1?
+				- if yes -> update DS1
+				- if no -> continue;
+		- end looping through outgoing nodes
+		- update DS2 to reflect current node
+	- end loop:
