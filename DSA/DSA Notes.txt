@@ -129,3 +129,4 @@
 		DS1 will need to convey the next minimum distance multiple times.  If it were a vector, finding the minimum distance would be an O(n) operation, which needs to run every iteration of the main loop.  So it needs to have fast fetching in a sorted fashion as well as fast node updating.  
 		
 		DS2 will need to have a fast finding algorithm, and will need to have its size easily checked.  A hash map - O(1) lookup
+		heres a change 
