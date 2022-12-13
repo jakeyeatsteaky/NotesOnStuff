@@ -61,7 +61,7 @@
 	
 					Step 2) There is an additional data structure which keeps track of the nodes which are already looked at
    {0,_ _ _ _ _}				   
-					Step 3) Look at all of the edges which are outgoing from the current node.  Check: Is the path from
+					Step 3) Look at all of the edges which are outgoing from the current node (Greedy Algorithm: makes locally optimal choices in hopes that it could lead to a globally optimal choice, but that's not always the case).  Check: Is the path from
 	0|1|2|3|4|5			    the current node less than the path in the "shortest path" data structure?
 	0|L|L|L|L|L					if no -> skip
 	0|7|L|L|L|L                 if yes -> update the shortest path data structure
@@ -130,3 +130,49 @@
 		
 		DS2 will need to have a fast finding algorithm, and will need to have its size easily checked.  A hash map - O(1) lookup
 		heres a change 
+	}
+	
+-> Min Heap
+	{
+	Resembles a binary tree with 2 more additional properties:
+		1) Completeness:  All levels (depth) must be filled completely, except for the last level.  If the last level is only partially complete, must be filled in from L->R 
+		2) Heap Property: (MIN) The value of every node must be <= the value of it's children nodes :: Root node is always the smallest value in heap
+		** Representing a min heap as an array **
+	        		8
+	        	   / \              
+	        	12     23          [8,12,23,17,31,30,44,102,18]
+	           /  \   /  \
+	         17   31 30   44       - Root node at index 0
+		    /  \                   - To find idx of child from index i:     	current node = array[i]
+		 102   18	                        L: 2i + 1                   		current->left = array[2i+1]
+}                                           R: 2i + 2                   		current->right = array[2i+2]
+								   - To find idx of parent node from index i:
+											FLOOR[(i-1)/2]					
+	Fundamental Operations of Min Heap:
+		Insertion: 
+			- Start with satisfying completeness property by adding to the leftmost and bottommost open space.  
+			- ** Sift Up ** from there
+		Sift Up:
+			- Compare node to its parent node (if in array form, compare to parent using equation for parent idx)
+			- if ChildNode is > ParentNode, swap 
+				-- Visual Representation of Sift Up --
+									8
+	                        	   / \           ex) Insert: 9   
+	                        	12     23            - Compare Child (9) to Parent(31) -> must be swapped
+	                           /  \   /  \
+	                         17   31 30   44        [8,12,23,17,31,30,44,102,18,[9]]
+		                    / \   /                 - idx of 9 = 9 :: idx of 9's parent = 9-1/2 = array[4] = 31
+		                 102  18 [9]                - swap: temp = array[4];
+															array[4] = 9;
+															array[9] = temp
+													[8,12,23,17,[9],30,44,102,18,31]         -> continue til Property 2) is met
+		Removal:
+			- Makes most sense to only be removing the minimum (for min heap) or maximum (for max heap) value -> root node is easiest to extract
+			- Swap the root with the final value of the heap
+			- pop the new bottom node (previous root)
+			- Sift down until properties are met
+		Sift Down:
+			- Compare a node to both its children nodes.  
+			- Swap with the smallest of the two children
+			- Keep sifting down until no more children or until node is greater than its two children
+		 
