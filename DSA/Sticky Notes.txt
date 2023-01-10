@@ -1,0 +1,31 @@
+Sticky Notes
+
+Mastery Progression
+{
+-> Leetcode Patterns List - CP Study
+   - Go through patterns and learn common techniques
+   - https://neetcode.io/roadmap
+
+
+Grind 169 - CP Practice
+
+Custom Allocator (Tsoding) 
+   - Watch and replicate
+   - adapt to scratch Data Structures
+
+Custom Garbage collector Tsoding
+
+Implement mutex under the hood
+
+STL Multithreading - how to use primitives
+
+How does Hardware interrupt work under the hood
+
+Implement most popular data structures from scratch in C and C++
+   - Work through, and also read through a guide to check your work
+   - Linked List
+   - BST (Balanced, Regular)
+   - Min / Max Heap
+   - Stack
+   - Queue
+}

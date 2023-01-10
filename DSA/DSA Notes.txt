@@ -1,5 +1,5 @@
 
-************************************************ Graph Traversal ************************************************
+		____________________<[** Graph Traversal **]>____________________
 -> Depth First Search 
 	{
 	In Order Traversal
@@ -139,20 +139,20 @@
 		2) Heap Property: (MIN) The value of every node must be <= the value of it's children nodes :: Root node is always the smallest value in heap
 		** Representing a min heap as an array **
 	        		8
-	        	   / \              
-	        	12     23          [8,12,23,17,31,30,44,102,18]
+	        	   / \                                                                    ** a heap is NOT sorted **  
+	        	12     23          [8,12,23,17,31,30,44,102,18]                     it just needs to satisfy the heap properties
 	           /  \   /  \
 	         17   31 30   44       - Root node at index 0
 		    /  \                   - To find idx of child from index i:     	current node = array[i]
 		 102   18	                        L: 2i + 1                   		current->left = array[2i+1]
-}                                           R: 2i + 2                   		current->right = array[2i+2]
+                                            R: 2i + 2                   		current->right = array[2i+2]
 								   - To find idx of parent node from index i:
 											FLOOR[(i-1)/2]					
 	Fundamental Operations of Min Heap:
-		Insertion: 
+		Insertion: __O(log(n))__ 
 			- Start with satisfying completeness property by adding to the leftmost and bottommost open space.  
 			- ** Sift Up ** from there
-		Sift Up:
+		Sift Up: __O(log(n))__ 
 			- Compare node to its parent node (if in array form, compare to parent using equation for parent idx)
 			- if ChildNode is > ParentNode, swap 
 				-- Visual Representation of Sift Up --
@@ -166,13 +166,389 @@
 															array[4] = 9;
 															array[9] = temp
 													[8,12,23,17,[9],30,44,102,18,31]         -> continue til Property 2) is met
-		Removal:
+		Removal: __O(log(n))__
 			- Makes most sense to only be removing the minimum (for min heap) or maximum (for max heap) value -> root node is easiest to extract
 			- Swap the root with the final value of the heap
 			- pop the new bottom node (previous root)
 			- Sift down until properties are met
-		Sift Down:
+		Sift Down:  __O(log(n))__ -> similar to binary search tree.  Every time you swap a node you're elminiating half the tree
 			- Compare a node to both its children nodes.  
 			- Swap with the smallest of the two children
 			- Keep sifting down until no more children or until node is greater than its two children
+		Build Heap: __O(n)__
+			- call Sift down on every parent node, continue sifting til no children or in place.  Intuitively, if every parent is in the right place, the tree is valid
+			- Start on the very last parent node - this can be calculated using the index of the last value in the heap
+			- From the last parent node, the rest of the parents "up" the tree lie in the array to the left of where the last parent node was
+				ex) 	
+					[8,12,23,17,31,30,44,102,18] the last parent can be calculated using the idx position of 18: array[8] = 18 :: 8-1/2 = 3
+					 0  1  2  3
+							  ^ index 3 is the last parent of the heap (17), and idxs 2 1 0 are the remaining parents
+			- You could also start at the root node and sift up, but its less optimal
+	}	
 		 
+
+		 
+		____________________<[** Game Dev **]>____________________
+-> Basic Concepts
+{
+	Basic Game Loop:
+		1) User input
+		2) Simulations (physics, collisiion etc.)
+		3) Rendering
+	
+	Programming is done on top of three layers of abstraction to communicate with the hardware:
+	 __________
+	|          |	 Because of difference OSes, its useful     ____________________
+    | Game Code|     to separate the game into a platform      |Platform Independent| -> gameplay code, assets, physics, animation, rendering
+	|__________|	 dependent section and a platform          |____________________|
+	|    OS    |     independent section  --->                           |
+	|__________|                                                 Platform Dependent
+    | Drivers  |                                                         |
+	|__________|	                                                     OS
+    | Hardware |                                                         |
+	|__________|                                                      Drivers
+																		 |
+																	  Hardware
+}
+
+-> Windows Platform Specific
+{
+	Entry Point:
+		windows graphical applications entry point need winmain instead of main
+		** Console Applications have different entry points than graphical applications **
+			-> because of this, different subsystems need to be used      
+				Project Properties > Linker > System > SubSystem > Change to Windows (All configurations, All Platforms)
+				
+	Creating a window:
+		(1) Create a Windows window class
+			WNDCLASS:
+				- style: specify the redraw style for the window
+				- className: this is a longpointer string (w_char) so prefix the string with L"Name here";
+				- callback Function: **WNDPROC** callback function for messaging on window
+					-> windowcallback needs to return a LRESULT which can use DefWindowProc(...) function
+		(2) Register the class
+			Need a pointer to the Window class -> RegisterClass function i.e. RegisterClass(&window)
+		(3) Create the window
+			void CreateWindowA -> A stands for ANSI, if you leave it off, windows will decide which is best
+	
+	Game Loop for window
+		- Using the bool "running" to be the guard for the game loop.  When the window X button is pressed, we need to handle that in the 
+			callback function
+				Using a switch case, the uMsg (UINT, unnammedParam2) which will be passed to the callback will either be WM_CLOSE or WM_DESTROY
+				
+	
+	Input:
+		- Handle window messaging for closing input.  Message structure 
+	
+	Summary:
+		- Entry point has to be through the WinMain function
+		- Create a WNDCLASS object with parameters: style, ClassName, and Callback Function
+			- CallBack Function: returns an LRESULT -> handle windows messaging here.
+			- Returns DefWindowProcW which handles messaging.
+		- Create loop for window and close on reciving messages using PeekMessage and TranslateMessage / DispatchMessage
+		
+}
+
+-> Rendering
+{
+	In order to send things to the window, we need a buffer -> just a collection of memory in an organized place
+	Render Process:
+		(1) Get the buffer
+		(2) Fill it
+		(3) Send it to windows (in the game loop)
+		
+	Getting size of the buffer will change whenever the size of the window is changed, so we need to use the callback to retrieve this case
+	
+	Buffer:
+		The buffer will be a block of "pixels" of sizec Width x Height of the window.  Each "pixel" is just a 32 bit integer.
+		** The buffer in this example will be allocated from the heap**
+			- Since the window will be resizeable, the size of the buffer based on this window will need to be deleted and reallocated on resize.
+			- Specific to windows, rather than using malloc, will be using VirtualAlloc(0)
+			- Allocation of the memory buffer for the window happens in the window callback function.
+		- After allocating the memory, send the memory buffer to the application in the "Render" stage of the while loop
+			- StretchDIBits
+				HDC: Handle to a device context, a reference that a window uses in order to draw to it.  Initialize this after the window using GetDC(wind) function
+				xDest, yDest, Destwidth, DestHeight: Rect info for destination
+				xSrc, ySrc, SrcWidth, SrcHeight: Rect info for source
+				ipBits: a pointer to the image bits which are stored as an array of byes AKA the buffer of pixels
+				lpbmi: a pointer to the bitmapinfo which gives info on pixels, initialize this 
+			- The pixels are sent to the window black
+		- Change the color of each pixel by iterating through each one and modifying the value (Simulate) must happen before the render call
+			- create a pointer to the current pixel (initialized at the start of the buffer)
+			
+	Unity Build:
+		- A typical compilation process:
+			  Regular Compilation          UNITY Build
+			    .cpp .cpp .cpp          .cpp .cpp .cpp      By combining everything into a single huge .obj file, it speeds up compilation.  
+                 |    |    |              \   |   /
+			      |    |    |               \  |  /         Also, now the .cpp file which is referenced in main does not need to be included in the build
+			      |    |    |              	 \ | /          By including it in the main.cpp, it is literally copy and pasted into main.
+			    .obj .obj .obj               .obj           ** to Exclude a file from main** RightClick file > properties > exclude from build
+				  \    |   /                   |
+				   \   |  /                  .exe
+				    \  | /
+					 .exe
+}
+
+-> Keyboard Input
+{
+	MSG Struct (windows.h)
+	typedef struct ** MSG **
+			HWND   hwnd: 		Handle to the window whos window procedure recieves the message.
+			UINT   message      Windows message enum -> Big list of windows messages
+			WPARAM wParam       Word-length data -> a piece of information about the message of size word
+			LPARAM lParam       Long-length data -> a piece of information about the message of size long
+			DWORD  time         Time when the message was posted
+			POINT  pt           Cursor Position
+			DWORD  lPrivate
+ 			MSG, *PMSG, *NPMSG, *LPMSG;
+	WM_KEYDOWN: 
+			Saving the state of whether or not a button is pressed:
+					The instances for which need to be tracked:
+						the frame in which the button was pressed
+						the frame in which the button was released
+						the state of the button, whether it is up or down. 
+					Soln: 
+						- Track 2 states -> (1) if the button is down and (2) if the button changed from last frame to the next frame
+							if(!isdown && button_has_changed) -> button is released 
+							If(isdown && has_changed) -> button is pressed
+
+}
+
+
+
+		____________________<[** C++ Programming and Principles **]>____________________
+-> custom Vector (WIP) {
+	
+	Vector under the hood, can be though of as a singular node with a pointer to a contiguous array
+	
+	class vector{
+		int size;
+		int* elem
+		}
+		vector<int>* vec(4) = new vector(int size = 4);
+		new returns a pointer to the object it creates.  
+						 vec[0] = 10, vec[1] = 20, vec[2] = 30, vec[3] = 40
+			vec:___
+			   | 4 |	      _0_ _1_ _2_ _3_		
+			   |___|-------->|10 |20 |30 |40 |
+							 |___|___|___|___|
+		
+	Out of Range Access:
+		when creating a pointer to a type (this vec contains an int* of size 4), the pointer doesnt
+		know how many elements it contains.  Hypothetically, the int* member of vec (called elem)
+		could be accessed thusly
+			vec->elem[7] which would yield data that was 4 int sized blocks past elem[3].
+			** This is called: OUT OF RANGE ACCESS **
+	
+        				  
+}  
+
+-> Copy Constructors (WIP) {
+	Copy constructors will be described in the context of using Vectors since one of the fundamental vector operations is to be able to "jump" when needing more memory for the contiguous array of elements within the vector.  It copies the vector into another, at a different location with 1.5x the space.
+	
+	The goal of a copy constructor is to use "=" to make the L vector = the R vector.  First the copy operation needs to be defined, and then tied to the = operator.  Must make sure that the copy operation gets called when *initializing* one vector with another.
+	 
+		--> vector(const vector&) -- Copy Constructor: A vector constructor which takes a const vector reference as a parameter.  
+	
+	
+	
+}
+
+-> Templates {
+	A mechanism to allow the programmer to use *DATA_TYPES* as parameters for a class or function.  ** The compiler generates a specific class or function when the class or function is instantiated at runtime with argument (Data_type) **
+	
+	Templates can be thought of as "type generators" in that when a templated class or function is created, it isnt defined.  Only when the type is specified does the compiler generate the type-specific class/function.
+	
+}	
+
+-> Inline keyword {
+	When a function is "inline" the compiler will try to generate code for the function at each point of the call rather than using function-call instructions.  
+	Function definition is replaced at compile time, rather than referring to that function definition elsewhere at runtime.  
+	
+	Why:
+		Pros:
+		- Reduce calling overhead for simple functions (increase runtime speed)
+		- Reduce space used on the call stack during runtime
+		- ** Increases locality of reference by utilizing the instruction cache **
+		- Marking a function as inline allows you to define it in the header file.  So the linker won't complain about multiple instances of the function in multiple compilation units.
+		Cons:
+		- Increases the size of the executable
+		- Can be bad in embedded systems where a large .exe is not preferred.
+	
+	
+}
+
+-> Little Endian v. Big Endian {
+	Big endian: MSB placed at LOWEST address.  0x12345678 stored with 12 at lowest
+	Little Endian: MSB placed at HIGHEST address. 0x12345678 stored with 12 at highest address
+}
+
+-> Const Correctness (basic, - more can be delved into following the link:) {
+	--> lots more to look into here: https://isocpp.org/wiki/faq/const-correctness#overview-const 
+	The programming technique of using const where objects shouldnt be mutated.  does not incur any runtime speed or space overhead.
+	
+	Ex) function which takes a string and promises to the caller that it will not change the string:
+		(pass by const pointer) 		void func(const std::string* str);
+		(pass by const reference)   	void func(const std::string& str);
+		(pass by value)					void func(std::string str);
+		--> in the first two, any attempt of func to change the str variable will not compile
+		--> in the pass by value case, the function can change the str varaible, but that will only be local to the func itself - no changes made to str will extend beyond this function.  
+	Const Correctness as it pertains to type safety:
+		- it prevents the programmer from inadvertently changing something which shouldnt be changed.  this allows the compiler to check for this correctness which can also protect from others modifying the code without modifying the intent of the code. 
+	
+	Const in Member functions:
+		- Ex) Const X* px -> px is a pointer to X class which is const. 
+			  void func_const() const;         (Const member function of class X)
+			  void func_not_const();           (non-const member function of class X)
+				- px->func_const is okay
+			a pointer to a const instance of a class can only call const member functions.
+			
+			Const Member function: a member function which inspects rather than mutates.  
+}
+
+-> Virtual Functions (overhead, and explanation) {
+	When a class contains or inherits a virtual function, 8 more bytes are added to the class layout (at the beginning) to account for the v_table pointer -> a pointer to the data structure known as the virtual function table.  
+		- Vtable for a class contains pointers to all virtual functions of the class.  
+		- Each concrete (non-abstract) class has a virtual table, and every *instance* of that class contains a pointer to the table.  
+		- Overhead:
+			- adds another layer of indirection to the call -> have to fetch vtable& for the calling function.
+			- since there is 1 v table, the compiler doesnt know which function is to be called which adds more time searching for the function. 
+			- virtual functions cant be inlined
+			- This can be similar to other types of *unecessary indirection* such as lots of branching. 
+}
+
+-> Bit Manipulation {
+	- Checking if a number is even or odd:
+		- & the number with 1.  if the 2^0 bit is set on any number, it is odd. :: if num && 1 == 1, its odd
+	
+	- Test if the nth bit is set:
+		- same idea as testing if the number is odd or even, but this time, & the number with 1, shifted left to the bit you are testing.  
+	
+	
+}
+
+		____________________<[** Custom Data Structures in C **]>____________________
+-> Linked List And some notes on typedef in C)
+{
+	typedef used so you don't have to declare "struct" every time you use MyLinkedList 
+	Consider using a forward declaration in the event that this data structure references itself
+	
+	Typedef:
+		Typedef allows the programmer to provide an alternate name for a type.  This just adds a new name for some existing data type, it doesn not create a new type.  
+				**ex) typedef <EXISTING_TYPE> <ALIAS>    **
+		
+		(1) Variable declaration without using "typedef":
+			struct Point
+				int x;
+				int y;
+			
+			int main() 
+					struct Point p1;  [Wherever "Point" is used, it needs to be prefaced: struct]
+					p1.x = 1;
+					return 0;
+					
+		(2) typedef alias for Point:
+			struct Point
+			  int x;
+			  int y;
+			
+			typedef struct Point Point; [Create the alias so you can refer to Point without struct]
+			
+			int main() 
+				Point p1;
+				p1.x = 1;
+				p1.y = 3;
+				printf("%d \n", p1.x);
+				printf("%d \n", p1.y);
+				return 0;
+		
+		(3) Declare typedef alias from within the strcut definition:		
+			typedef struct Point
+				  int x;
+				  int y;
+				 Point;
+				int main() 
+					Point p1;
+					p1.x = 1;
+					p1.y = 3;
+					printf("%d \n", p1.x);
+					printf("%d \n", p1.y);
+					return 0;
+			
+	Typedef forward declaration:
+		// First forward declare what the struct is, and what its alias is
+		typedef struct MyLinkedList MyLinkedList;
+		
+		// then, just define the struct itself
+		struct MyLinkedList [
+			int data;
+			int length; -> where length = idxOfTail 
+			MyLinkedList* next;
+		];
+
+** In this implementation of the Linked List, obj is always the head of the list, and the "value" of the head is -1;
+
+		MyLinkedList* myLinkedListCreate() 
+			This is basically the constructor for a linkedList struct
+			- Create the node in memory
+			- Assign data value
+			- Assign next pointer
+			- Assign length
+			- return pointer to the list
+
+		int myLinkedListGet(MyLinkedList* obj, int index)
+			return the value of the pointer at the specified index;
+			- CASE 1 (invalid idx): 
+				- If length < index, or index < -1, return -1;
+			- CASE 2 (valid idx):
+				-  refer to the 0th index node in the list	
+					- since obj = head, obj->next = the first node, aka idx 0;
+				- create our index counter starting at 0;
+				- when idxCounter != index, iterate through list and increment idxcounter
+				- when this while condition breaks, return current node';s value;
+	  
+		void myLinkedListAddAtHead(MyLinkedList* obj, int val) 
+			if the obj is always referring to the head of the list, there doesnt need to be another case in which the list is empty.  no matter what, adding to the head will always be adding a new node to obj->next
+			- increment the length
+			- create new node and set its value
+			- new node ->next == obj->next  aka the 0th index of the list
+			- obj->next points to the new node
+
+		void myLinkedListAddAtTail(MyLinkedList* obj, int val) 
+			-increment the length
+			- while a next node exists, increment the list
+			- create the new node, define value, define next=NULL
+			- obj->next = new node
+
+		void myLinkedListAddAtIndex(MyLinkedList* obj, int index, int val) 
+			- CASE 1 (invalid index):
+				- if index is > length, || index < 0 return -1
+			- CASE 2 (valid index):
+				- point to 1 behind the current idx.  if idx = 0, then we point to obj
+				- create the idx counter;
+				- while idxCounter != index
+					- increment the idxCounter
+					- increment the current list node
+				- once while condition breaks, we have a pointer to node behind the index in question
+					- create and define new node
+					- new node ->next = obj ->next;
+					- obj->next = new node
+					
+
+
+		void myLinkedListDeleteAtIndex(MyLinkedList* obj, int index) 
+			same as above except when the while condition breaks;
+				- store obj->next (to be deleted)
+				- obj->next = toBedeleted->next;
+				- free to be deleted;
+
+
+		void myLinkedListFree(MyLinkedList* obj)
+			while obj is in existance, capture obj (p), iterate obj, free p
+
+
+}  
+
+
+                               
